@@ -1,10 +1,10 @@
 #include "s21_common.h"
 
-int is_no_printing(unsigned char c) {
+int isNoPrinting(unsigned char c) {
   return (c < 32 && c != '\t' && c != '\n') || c == 127 || c > 127;
 }
 
-void print_escaped_char(unsigned char c, int flag_v, int flag_T, int flag_E) {
+void PrintEscapedChar(unsigned char c, int flag_v, int flag_T, int flag_E) {
   if (c == '\t' && flag_T) {
     printf("^I");
   } else if (c == '\n') {
@@ -12,7 +12,7 @@ void print_escaped_char(unsigned char c, int flag_v, int flag_T, int flag_E) {
     putchar('\n');
   } else if (c == '\r' && (flag_v || flag_E)) {
     printf("^M");
-  } else if (flag_v && is_no_printing(c)) {
+  } else if (flag_v && isNoPrinting(c)) {
     unsigned char uc = c;
     if (uc >= 128) {
       printf("M-");
@@ -29,7 +29,7 @@ void print_escaped_char(unsigned char c, int flag_v, int flag_T, int flag_E) {
   }
 }
 
-FILE *open_file(const char *filename, int *error_status) {
+FILE *OpenFile(const char *filename, int *error_status) {
   FILE *file = NULL;
 
   if (filename[0] == '-' && filename[1] == '\0') {

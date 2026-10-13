@@ -8,26 +8,26 @@ int main(int argc, char *argv[]) {
   int error_status = 0;
   int line_number = 1;
 
-  error_status = parsing_flags(argc, argv, &flags);
+  error_status = CatParsingFlags(argc, argv, &flags);
 
   if (optind == argc) {
-    print_file("-", &flags, &error_status, &line_number);
+    ConcatenateFiles("-", &flags, &error_status, &line_number);
   } else {
     for (int i = optind; i < argc; ++i) {
-      print_file(argv[i], &flags, &error_status, &line_number);
+      ConcatenateFiles(argv[i], &flags, &error_status, &line_number);
     }
   }
 
   return error_status;
 }
 
-int parsing_flags(int argc, char **argv, CatFlags *flags) {
+int CatParsingFlags(int argc, char **argv, CatFlags *flags) {
   int opt;
-  int status =0;
+  int error = 0;
 
   const char *short_options = "benstvETA";
 
-  static struct option long_options[] = {
+  static const struct option long_options[] = {
       {"number-nonblank", no_argument, NULL, 'b'},
       {"number", no_argument, NULL, 'n'},
       {"squeeze-blank", no_argument, NULL, 's'},
@@ -37,7 +37,8 @@ int parsing_flags(int argc, char **argv, CatFlags *flags) {
       {"show-all", no_argument, NULL, 'A'},
       {NULL, 0, NULL, 0}};
 
-  while ((opt = getopt_long(argc, argv, short_options, long_options, NULL)) != -1) {
+  while ((opt = getopt_long(argc, argv, short_options, long_options, NULL)) !=
+         -1) {
     switch (opt) {
       case 'b':
         flags->b = 1;
@@ -72,16 +73,47 @@ int parsing_flags(int argc, char **argv, CatFlags *flags) {
         flags->E = 1;
         flags->T = 1;
         break;
-     default: 
-     status = 1;
-     break;
+      default:
+        error = 1;
+        break;
     }
   }
-  return status;
+  return error;
 }
 
-void print_file(const char *filename, CatFlags *flags, int *error_status, int *line_number) {
-  FILE *file = open_file(filename, error_status);
+void ProcessChar(int c, CatFlags *flags, int *line_number, int *is_new_line,
+                 int *prev_is_empty) {
+  int cur_is_nl = (c == '\n');
+  int was_empty_line = *is_new_line;
+  int skip = (flags->s && cur_is_nl && *prev_is_empty);
+
+  if (cur_is_nl) {
+    *prev_is_empty = was_empty_line;
+  } else {
+    *prev_is_empty = 0;
+  }
+
+  if (!skip) {
+    if (*is_new_line) {
+      if (flags->n && !flags->b) {
+        printf("%6d\t", (*line_number)++);
+      } else if (flags->b && !cur_is_nl) {
+        printf("%6d\t", (*line_number)++);
+      }
+      *is_new_line = 0;
+    }
+
+    PrintEscapedChar((unsigned char)c, flags->v, flags->T, flags->E);
+
+    if (cur_is_nl) {
+      *is_new_line = 1;
+    }
+  }
+}
+
+void ConcatenateFiles(const char *filename, CatFlags *flags, int *error_status,
+                      int *line_number) {
+  FILE *file = OpenFile(filename, error_status);
 
   if (file != NULL) {
     int c;
@@ -89,32 +121,7 @@ void print_file(const char *filename, CatFlags *flags, int *error_status, int *l
     int prev_is_empty = 0;
 
     while ((c = fgetc(file)) != EOF) {
-      int cur_is_nl = (c == '\n');
-      int was_empty_line = is_new_line;
-      int skip = (flags->s && cur_is_nl && prev_is_empty);
-
-      if (!skip) {
-        if (is_new_line) {
-          if (flags->n && !flags->b) {
-            printf("%6d\t", (*line_number)++);
-          } else if (flags->b && !cur_is_nl) {
-            printf("%6d\t", (*line_number)++);
-          }
-          is_new_line = 0;
-        }
-
-        print_escaped_char((unsigned char)c, flags->v, flags->T, flags->E);
-
-        if (cur_is_nl) {
-          is_new_line = 1;
-        }
-      }
-      if (cur_is_nl) {
-          prev_is_empty = was_empty_line;
-        } else {
-            prev_is_empty = 0;
-        }
-
+      ProcessChar(c, flags, line_number, &is_new_line, &prev_is_empty);
     }
 
     if (file != stdin) {
