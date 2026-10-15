@@ -48,7 +48,8 @@ int main(int argc, char *argv[]) {
       free(regexes);
     }
   }
-
+  
+  free(flags.patterns);
   if (error_status == 2) return 2;
   return any_match ? 0 : 1;
 }
