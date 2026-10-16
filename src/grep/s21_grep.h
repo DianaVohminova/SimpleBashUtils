@@ -15,15 +15,23 @@ typedef struct {
   int c;
   int l;
   int n;
-
-  char **patterns;
+  int h;
+  int s;
+  int f;
+  int o;
+  char** patterns;
   int pattern_count;
+  int pattern_capacity;
 } GrepFlags;
 
-int ParsingFlags(int argc, char **argv, GrepFlags *flags);
-
-void ProcessFile(const char *filename, GrepFlags *flags, regex_t *regexes,
-                 int regex_count, int *error_status, int *any_match,
+int ParsingFlags(int argc, char** argv, GrepFlags* flags);
+void ProcessFile(const char* filename, GrepFlags* flags, regex_t* regexes,
+                 int regex_count, int* error_status, int* any_match,
                  int many_files);
+int AddPattern(GrepFlags* flags, const char* pattern);
+int LoadPatternsFromFile(const char* filename, GrepFlags* flags);
+void PrintMatchedParts(const char* line, int line_no, const char* filename,
+                       const GrepFlags* flags, regex_t* regexes,
+                       int regex_count, int many_files);
 
 #endif

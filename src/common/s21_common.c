@@ -29,18 +29,18 @@ void PrintEscapedChar(unsigned char c, int flag_v, int flag_T, int flag_E) {
   }
 }
 
-FILE *OpenFile(const char *filename, int *error_status) {
-  FILE *file = NULL;
+FILE* OpenFile(const char* filename, const char* prog_name) {
+  FILE* file = NULL;
 
   if (filename[0] == '-' && filename[1] == '\0') {
     file = stdin;
   } else {
     file = fopen(filename, "r");
-
-    if (file == NULL) {
-      fprintf(stderr, "s21_cat: %s: No such file or directory\n", filename);
-      *error_status = 1;
+    if (file == NULL && prog_name != NULL) {
+      fprintf(stderr, "%s: %s: No such file or directory\n", prog_name,
+              filename);
     }
   }
+
   return file;
 }

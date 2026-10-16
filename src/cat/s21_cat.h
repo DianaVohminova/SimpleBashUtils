@@ -17,10 +17,10 @@ typedef struct {
   int A;
 } CatFlags;
 
-int CatParsingFlags(int argc, char **argv, CatFlags *flags);
-void ConcatenateFiles(const char *filename, CatFlags *flags, int *error_status,
-                      int *line_number);
-void ProcessChar(int c, CatFlags *flags, int *line_number, int *is_new_line,
-                 int *prev_is_empty);
+int CatParsingFlags(int argc, char** argv, CatFlags* flags);
+void ConcatenateFiles(const char* filename, CatFlags* flags, int* error_status,
+                      int* line_number);
+void ProcessChar(int c, CatFlags* flags, int* line_number, int* is_new_line,
+                 int* prev_is_empty);
 
 #endif

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   CatFlags flags = {0};
   int error_status = 0;
   int line_number = 1;
@@ -21,11 +21,11 @@ int main(int argc, char *argv[]) {
   return error_status;
 }
 
-int CatParsingFlags(int argc, char **argv, CatFlags *flags) {
+int CatParsingFlags(int argc, char** argv, CatFlags* flags) {
   int opt;
   int error = 0;
 
-  const char *short_options = "benstvETA";
+  const char* short_options = "benstvETA";
 
   static const struct option long_options[] = {
       {"number-nonblank", no_argument, NULL, 'b'},
@@ -81,8 +81,8 @@ int CatParsingFlags(int argc, char **argv, CatFlags *flags) {
   return error;
 }
 
-void ProcessChar(int c, CatFlags *flags, int *line_number, int *is_new_line,
-                 int *prev_is_empty) {
+void ProcessChar(int c, CatFlags* flags, int* line_number, int* is_new_line,
+                 int* prev_is_empty) {
   int cur_is_nl = (c == '\n');
   int was_empty_line = *is_new_line;
   int skip = (flags->s && cur_is_nl && *prev_is_empty);
@@ -111,9 +111,9 @@ void ProcessChar(int c, CatFlags *flags, int *line_number, int *is_new_line,
   }
 }
 
-void ConcatenateFiles(const char *filename, CatFlags *flags, int *error_status,
-                      int *line_number) {
-  FILE *file = OpenFile(filename, error_status);
+void ConcatenateFiles(const char* filename, CatFlags* flags, int* error_status,
+                      int* line_number) {
+  FILE* file = OpenFile(filename, "s21_cat");
 
   if (file != NULL) {
     int c;
@@ -127,5 +127,7 @@ void ConcatenateFiles(const char *filename, CatFlags *flags, int *error_status,
     if (file != stdin) {
       fclose(file);
     }
+  } else {
+    *error_status = 1;
   }
 }
