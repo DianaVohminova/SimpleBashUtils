@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 
 static void CompileAllPatterns(const GrepFlags* flags, regex_t* regexes,
                                int* compiled, int* error_status) {
-  int reg_flags = 0;
+  int reg_flags = REG_NEWLINE;
   if (flags->i) reg_flags |= REG_ICASE;
 
   for (int i = 0; i < flags->pattern_count && *error_status == 0; i++) {

@@ -1,9 +1,8 @@
 #!/bin/bash
-# tests/test_cat_75.sh
-# Запуск: ./tests/test_cat_75.sh [путь_к_s21_cat]
+# tests/test_cat.sh
+# Запуск: ./tests/test_cat.sh [путь_к_s21_cat]
 
 CAT=${1:-./cat/s21_cat}
-REF=cat
 PASS=0
 FAIL=0
 N=0
@@ -42,23 +41,31 @@ run() {
   shift 2
   N=$((N+1))
 
-  local ref_out our_out
-  # shellcheck disable=SC2086
-  ref_out=$(cat $flags "$@" 2>&1 | od -An -c)
-  # shellcheck disable=SC2086
-  our_out=$("$CAT" $flags "$@" 2>&1 | od -An -c)
+  local ref_out our_out ref_err our_err ref_rc our_rc
+  
+  # Раздельно захватываем stdout и stderr
+  ref_out=$(cat $flags "$@" 2>"$T/ref_err")
+  ref_rc=$?
+  ref_err=$(cat "$T/ref_err")
+  
+  our_out=$("$CAT" $flags "$@" 2>"$T/our_err")
+  our_rc=$?
+  our_err=$(cat "$T/our_err")
 
   echo "================================================="
-  echo "Тест #$N: Аргументы [$flags $*]"
-  if [ "$ref_out" == "$our_out" ]; then
-    echo "[SUCCESS] Результаты полностью идентичны."
+  echo "Тест #$N: $desc"
+  echo "Аргументы: [$flags $*]"
+  
+  # Сравниваем stdout, stderr и код возврата
+  if [ "$ref_out" == "$our_out" ] && [ "$ref_rc" == "$our_rc" ]; then
+    echo "[SUCCESS]"
     PASS=$((PASS+1))
   else
-    echo "[FAIL] Расхождение:"
-    echo "--- ref ---"
-    cat $flags "$@" 2>&1 | od -An -c
-    echo "--- our ---"
-    "$CAT" $flags "$@" 2>&1 | od -An -c
+    echo "[FAIL] rc: ref=$ref_rc our=$our_rc"
+    echo "--- ref stdout ---"
+    printf '%s' "$ref_out" | od -An -c | head -20
+    echo "--- our stdout ---"
+    printf '%s' "$our_out" | od -An -c | head -20
     FAIL=$((FAIL+1))
   fi
 }
@@ -69,21 +76,27 @@ run_stdin() {
   local flags="$3"
   N=$((N+1))
 
-  local ref_out our_out
-  # shellcheck disable=SC2086
-  ref_out=$(printf '%b' "$input" | cat $flags 2>&1 | od -An -c)
-  # shellcheck disable=SC2086
-  our_out=$(printf '%b' "$input" | "$CAT" $flags 2>&1 | od -An -c)
+  local ref_out our_out ref_rc our_rc
+  
+  ref_out=$(printf '%b' "$input" | cat $flags 2>/dev/null)
+  ref_rc=$?
+  
+  our_out=$(printf '%b' "$input" | "$CAT" $flags 2>/dev/null)
+  our_rc=$?
 
   echo "================================================="
-  echo "Тест #$N: stdin [$flags] input='$input'"
-  if [ "$ref_out" == "$our_out" ]; then
-    echo "[SUCCESS] Результаты полностью идентичны."
+  echo "Тест #$N: $desc"
+  echo "stdin [$flags] input='$input'"
+  
+  if [ "$ref_out" == "$our_out" ] && [ "$ref_rc" == "$our_rc" ]; then
+    echo "[SUCCESS]"
     PASS=$((PASS+1))
   else
-    echo "[FAIL] Расхождение:"
-    echo "--- ref ---"; printf '%b' "$input" | cat $flags 2>&1 | od -An -c
-    echo "--- our ---"; printf '%b' "$input" | "$CAT" $flags 2>&1 | od -An -c
+    echo "[FAIL] rc: ref=$ref_rc our=$our_rc"
+    echo "--- ref ---"
+    printf '%s' "$ref_out" | od -An -c | head -20
+    echo "--- our ---"
+    printf '%s' "$our_out" | od -An -c | head -20
     FAIL=$((FAIL+1))
   fi
 }
@@ -180,12 +193,17 @@ run "-A -b blanks"           "-A -b"  "$T/blanks.txt"
 run "-A -s blanks"           "-A -s"  "$T/blanks.txt"
 run "-benst edge"            "-benst" "$T/edge.txt"
 
-# ================= мультифайл (73-75) =================
+# ================= мультифайл (73-80) =================
 run "multi 2 files"          ""      "$T/normal.txt" "$T/abc.txt"
 run "multi -n"               "-n"    "$T/abc.txt"    "$T/num.txt"
 run "multi -b"               "-b"    "$T/blanks.txt" "$T/normal.txt"
+run "multi 3 files"          ""      "$T/abc.txt" "$T/num.txt" "$T/normal.txt"
+run "multi -n 3"             "-n"    "$T/abc.txt" "$T/num.txt" "$T/normal.txt"
+run "multi -A 2"             "-A"    "$T/tabs.txt" "$T/nonprint.txt"
+run "multi -s 2 blanks"      "-s"    "$T/blanks.txt" "$T/end_blanks.txt"
+run "multi with empty"       ""      "$T/normal.txt" "$T/empty.txt" "$T/abc.txt"
 
-# ================= длинные флаги (76-82) =================
+# ================= длинные флаги (81-87) =================
 run "--number"                     "--number"               "$T/normal.txt"
 run "--number-nonblank"            "--number-nonblank"      "$T/normal.txt"
 run "--squeeze-blank"              "--squeeze-blank"        "$T/blanks.txt"
@@ -194,35 +212,36 @@ run "--show-tabs"                  "--show-tabs"            "$T/tabs.txt"
 run "--show-nonprinting"           "--show-nonprinting"     "$T/nonprint.txt"
 run "--show-all"                   "--show-all"             "$T/mix.txt"
 
-# ================= комбинации длинных (83-87) =================
+# ================= комбинации длинных (88-92) =================
 run "--number --squeeze-blank"     "--number --squeeze-blank"            "$T/blanks.txt"
 run "--number-nonblank --show-ends" "--number-nonblank --show-ends"      "$T/blanks.txt"
 run "--show-tabs --show-ends"      "--show-tabs --show-ends"             "$T/tabs.txt"
 run "--show-all --number"          "--show-all --number"                 "$T/normal.txt"
 run "--show-all --squeeze-blank"   "--show-all --squeeze-blank"          "$T/blanks.txt"
 
-# ================= смешанные (88-91) =================
+# ================= смешанные (93-96) =================
 run "-n --squeeze-blank"           "-n --squeeze-blank"      "$T/blanks.txt"
 run "-b --show-ends"               "-b --show-ends"          "$T/blanks.txt"
 run "-A --number"                  "-A --number"             "$T/normal.txt"
 run "-s --show-all"                "-s --show-all"           "$T/blanks.txt"
 
-# ================= склеенные (92-95) =================
+# ================= склеенные (97-100) =================
 run "-nET"                         "-nET"                   "$T/normal.txt"
 run "-vET"                         "-vET"                   "$T/nonprint.txt"
 run "-bs"                          "-bs"                    "$T/blanks.txt"
 run "-nbs"                         "-nbs"                   "$T/blanks.txt"
 
-# Кое-что пропустила
-# ================= мультифайл (104-111) =================
-run "multi 3 files"      ""      "$T/abc.txt" "$T/num.txt" "$T/normal.txt"
-run "multi -n 3"         "-n"    "$T/abc.txt" "$T/num.txt" "$T/normal.txt"
-run "multi -A 2"         "-A"    "$T/tabs.txt" "$T/nonprint.txt"
-run "multi -s 2 blanks"  "-s"    "$T/blanks.txt" "$T/end_blanks.txt"
-run "multi with empty"   ""      "$T/normal.txt" "$T/empty.txt" "$T/abc.txt"
-run "multi -b blanks"    "-b"    "$T/blanks.txt" "$T/start_blank.txt"
-run "multi -E"           "-E"    "$T/crlf.txt" "$T/normal.txt"
-run "multi -T tabs"      "-T"    "$T/tabs.txt" "$T/mix.txt"
+# ================= stdin (101-105) =================
+run_stdin "stdin basic"            "hello\nworld\n"         ""
+run_stdin "stdin -n"               "hello\nworld\n"         "-n"
+run_stdin "stdin -b"               "hello\n\nworld\n"       "-b"
+run_stdin "stdin -E"               "hello\nworld\n"         "-E"
+run_stdin "stdin -s"               "hello\n\n\nworld\n"     "-s"
+
+# ================= ошибки (106-108) =================
+run "nonexistent file"             ""      "$T/nonexistent.txt"
+run "no permissions"               ""      "/root/secret"
+run "mixed valid and invalid"      ""      "$T/normal.txt" "$T/nonexistent.txt"
 
 # ================= итог =================
 echo
