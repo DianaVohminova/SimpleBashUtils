@@ -238,7 +238,8 @@ static void PrintMatchedContent(const char* line, ssize_t len, int line_no,
                                 const char* filename, const GrepFlags* flags,
                                 regex_t* regexes, int regex_count,
                                 int many_files) {
-  if (flags->o && !flags->v) {
+  if (flags->o && flags->v) {
+  } else if (flags->o) {
     PrintMatchedParts(line, line_no, filename, flags, regexes, regex_count,
                       many_files);
   } else {
@@ -295,13 +296,14 @@ void PrintMatchedParts(const char* line, int line_no, const char* filename,
 
     while (regexec(&regexes[i], search_start, 1, pmatch, 0) == 0) {
       int match_len = (int)(pmatch[0].rm_eo - pmatch[0].rm_so);
-      PrintPrefix(filename, line_no, flags, many_files);
-      printf("%.*s\n", match_len, search_start + pmatch[0].rm_so);
 
-      search_start += pmatch[0].rm_eo;
-      if (pmatch[0].rm_so == pmatch[0].rm_eo) {
-        if (*search_start == '\0') break;
-        search_start++;
+      if (match_len > 0) {
+        PrintPrefix(filename, line_no, flags, many_files);
+        printf("%.*s\n", match_len, search_start + pmatch[0].rm_so);
+        search_start += pmatch[0].rm_eo;
+      } else {
+        if (search_start[pmatch[0].rm_eo] == '\0') break;
+        search_start += pmatch[0].rm_eo + 1;
       }
     }
   }

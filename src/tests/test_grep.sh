@@ -27,6 +27,8 @@ printf 'line2\nline3\n' > "$T/multi2.txt"
 printf 'pattern1\npattern2\n' > "$T/patterns.txt"
 printf 'hello\nworld\nfoo\n' > "$T/simple.txt"
 
+printf 'abc\n' > "$T/empty_match.txt"
+
 # ---------- функция запуска одного теста ----------
 run() {
   local desc="$1"
@@ -234,6 +236,9 @@ run_stdin "stdin -o"           "hello world\n"          "-o hello"
 # ================= приоритет флагов =================
 run "priority -l over -n"      "-l -n" hello "$T/a.txt" "$T/single.txt"
 run "priority -c over -n"      "-c -n" hello "$T/a.txt"
+
+run "-o empty match star" "-o" "a*" "$T/empty_match.txt"
+run "-o empty at end" "-o" "c*" "$T/empty_match.txt"
 
 # ================= итог =================
 echo
