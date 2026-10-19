@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
   int error_status = 0;
   int any_match = 0;
 
-  if (ParsingFlags(argc, argv, &flags) != 0 || flags.pattern_count == 0) {
+  if (ParsingFlags(argc, argv, &flags) != 0) {
     fprintf(stderr, "Usage: s21_grep [-eivclnhsfo] pattern [file...]\n");
     error_status = 2;
   } else {
