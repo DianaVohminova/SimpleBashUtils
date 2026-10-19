@@ -25,16 +25,12 @@ int CatParsingFlags(int argc, char** argv, CatFlags* flags) {
   int opt;
   int error = 0;
 
-  const char* short_options = "benstvETA";
+  const char* short_options = "benstvET";
 
   static const struct option long_options[] = {
       {"number-nonblank", no_argument, NULL, 'b'},
       {"number", no_argument, NULL, 'n'},
       {"squeeze-blank", no_argument, NULL, 's'},
-      {"show-nonprinting", no_argument, NULL, 'v'},
-      {"show-ends", no_argument, NULL, 'E'},
-      {"show-tabs", no_argument, NULL, 'T'},
-      {"show-all", no_argument, NULL, 'A'},
       {NULL, 0, NULL, 0}};
 
   while ((opt = getopt_long(argc, argv, short_options, long_options, NULL)) !=
@@ -66,11 +62,6 @@ int CatParsingFlags(int argc, char** argv, CatFlags* flags) {
         flags->E = 1;
         break;
       case 'T':
-        flags->T = 1;
-        break;
-      case 'A':
-        flags->v = 1;
-        flags->E = 1;
         flags->T = 1;
         break;
       default:
