@@ -29,7 +29,6 @@ printf 'hello\nworld\nfoo\n' > "$T/simple.txt"
 
 printf 'abc\n' > "$T/empty_match.txt"
 
-# ---------- функция запуска одного теста ----------
 run() {
   local desc="$1"
   local flags="$2"
@@ -38,7 +37,6 @@ run() {
 
   local ref_out our_out ref_err our_err ref_rc our_rc
   
-  # Раздельно захватываем stdout и stderr
   ref_out=$(grep $flags "$@" 2>"$T/ref_err")
   ref_rc=$?
   ref_err=$(cat "$T/ref_err")
@@ -51,7 +49,6 @@ run() {
   echo "Тест #$N: $desc"
   echo "Аргументы: [$flags $*]"
   
-  # Сравниваем stdout и код возврата (stderr может отличаться в формате сообщений)
   if [ "$ref_out" == "$our_out" ] && [ "$ref_rc" == "$our_rc" ]; then
     echo "[SUCCESS]"
     PASS=$((PASS+1))
