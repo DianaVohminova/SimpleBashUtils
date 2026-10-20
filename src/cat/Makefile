@@ -23,4 +23,8 @@ clean:
 
 rebuild: clean all
 
-.PHONY: all clean rebuild
+test:
+	chmod +x test_cat.sh
+	./test_cat.sh
+
+.PHONY: all clean rebuild test
