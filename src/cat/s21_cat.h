@@ -14,7 +14,6 @@ typedef struct {
   int v;
   int E;
   int T;
-  int A;
 } CatFlags;
 
 int CatParsingFlags(int argc, char** argv, CatFlags* flags);

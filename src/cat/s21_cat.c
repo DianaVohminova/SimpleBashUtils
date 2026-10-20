@@ -10,14 +10,15 @@ int main(int argc, char* argv[]) {
 
   error_status = CatParsingFlags(argc, argv, &flags);
 
-  if (optind == argc) {
-    ConcatenateFiles("-", &flags, &error_status, &line_number);
-  } else {
-    for (int i = optind; i < argc; ++i) {
-      ConcatenateFiles(argv[i], &flags, &error_status, &line_number);
+  if (error_status == 0) {
+    if (optind == argc) {
+      ConcatenateFiles("-", &flags, &error_status, &line_number);
+    } else {
+      for (int i = optind; i < argc; ++i) {
+        ConcatenateFiles(argv[i], &flags, &error_status, &line_number);
+      }
     }
   }
-
   return error_status;
 }
 
