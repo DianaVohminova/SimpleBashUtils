@@ -23,4 +23,8 @@ clean:
 
 rebuild: clean all
 
-.PHONY: all clean rebuild
+test:
+	chmod +x test_grep.sh
+	./test_grep.sh
+
+.PHONY: all clean rebuild test
