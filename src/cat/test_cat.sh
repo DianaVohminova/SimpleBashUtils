@@ -14,7 +14,6 @@ N=0
 T=$(mktemp -d)
 trap 'rm -rf "$T"' EXIT
 
-# ---------- тестовые данные ----------
 printf 'Hello, World!\nThis is a test file.\n' > "$T/normal.txt"
 printf 'line1\n\nline2\n\n\nline3\n'          > "$T/blanks.txt"
 printf 'no newline at end'                    > "$T/no_nl.txt"
@@ -22,7 +21,6 @@ printf 'a\tb\tc\n'                            > "$T/tabs.txt"
 printf 'a\001b\002c\n'                        > "$T/nonprint.txt"
 : > "$T/empty.txt"
 
-# ---------- один тест ----------
 run() {
     local desc="$1"; shift
     local flags="$1"; shift
@@ -43,7 +41,6 @@ run() {
     fi
 }
 
-# ---------- сами тесты ----------
 run "no flags normal"   ""     "$T/normal.txt"
 run "no flags blanks"   ""     "$T/blanks.txt"
 run "no flags no_nl"    ""     "$T/no_nl.txt"
@@ -62,7 +59,6 @@ run "--number"          "--number"         "$T/normal.txt"
 run "--number-nonblank" "--number-nonblank" "$T/blanks.txt"
 run "--squeeze-blank"   "--squeeze-blank"  "$T/blanks.txt"
 
-# ---------- stdin ----------
 run_stdin() {
     local desc="$1"; local input="$2"; local flags="$3"
     N=$((N+1))
@@ -84,10 +80,8 @@ run_stdin "stdin -s"      'a\n\n\n\nb\n'     '-s'
 run_stdin "stdin -T"      'a\tb\n'           '-T'
 run_stdin "stdin -v"      'a\001b\n'         '-v'
 
-# ---------- ошибки ----------
 run "nonexistent file"  ""     "$T/nonexistent.txt"
 
-# ---------- итог ----------
 echo "-------------------------------------------"
 echo "Пройдено: $PASS из $N. Провалено: $FAIL."
 [ "$FAIL" -eq 0 ]
