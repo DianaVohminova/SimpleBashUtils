@@ -29,9 +29,6 @@ void ProcessFile(const char* filename, GrepFlags* flags, regex_t* regexes,
                  int regex_count, int* error_status, int* any_match,
                  int many_files);
 int AddPattern(GrepFlags* flags, const char* pattern);
-int LoadPatternsFromFile(const char* filename, GrepFlags* flags);
-void PrintMatchedParts(const char* line, int line_no, const char* filename,
-                       const GrepFlags* flags, regex_t* regexes,
-                       int regex_count, int many_files);
+int LoadPatternsFromFile(GrepFlags* flags, const char* filename);
 
 #endif
