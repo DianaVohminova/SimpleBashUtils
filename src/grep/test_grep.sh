@@ -1,9 +1,4 @@
 #!/bin/bash
-# grep/test_grep.sh — мини-тесты для s21_grep
-# Запуск из grep/:        ./test_grep.sh
-# Запуск из src/:         ./grep/test_grep.sh
-# Запуск из любого места: /path/to/grep/test_grep.sh
-# С аргументом:           ./test_grep.sh /path/to/other/s21_grep
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 GREP="${1:-$SCRIPT_DIR/s21_grep}"
@@ -19,7 +14,6 @@ N=0
 T=$(mktemp -d)
 trap 'rm -rf "$T"' EXIT
 
-# ---------- тестовые данные ----------
 printf 'hello world\nHELLO\nfoo\nbar hello\n' > "$T/a.txt"
 printf 'one\ntwo\nthree\n'                    > "$T/b.txt"
 printf 'hello\n'                              > "$T/single.txt"
@@ -30,7 +24,6 @@ printf 'line2\nline3\n'                       > "$T/multi2.txt"
 printf 'pattern1\npattern2\n'                 > "$T/patterns.txt"
 : > "$T/empty_file.txt"
 
-# ---------- один тест ----------
 run() {
     local desc="$1"; shift
     local flags="$1"; shift
@@ -51,7 +44,6 @@ run() {
     fi
 }
 
-# ---------- stdin ----------
 run_stdin() {
     local desc="$1"; local input="$2"; local flags="$3"
     N=$((N+1))
@@ -129,7 +121,6 @@ run_stdin "stdin -v"      'hello\nworld\n'  '-v hello'
 run_stdin "stdin -i"      'HELLO\nhello\n'  '-i hello'
 run_stdin "stdin -o"      'hello world\n'   '-o hello'
 
-# ================= итог =================
 echo "-------------------------------------------"
 echo "Пройдено: $PASS из $N. Провалено: $FAIL."
 [ "$FAIL" -eq 0 ]
